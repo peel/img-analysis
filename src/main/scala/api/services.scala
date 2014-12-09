@@ -67,7 +67,7 @@ trait FailureHandling {
  */
 class RoutedHttpService(route: Route) extends Actor with HttpService with ActorLogging {
 
-  implicit def actorRefFactory = context
+  def actorRefFactory = context
 
   implicit val handler = ExceptionHandler {
     case NonFatal(ErrorResponseException(statusCode, entity)) => ctx =>
