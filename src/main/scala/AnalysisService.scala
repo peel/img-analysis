@@ -51,7 +51,7 @@ class AnalysisService(ctx: RequestContext) extends Actor {
         }
       case Failure(error) => completeWithError(error)
     }
-    def completeWithError(error: Throwable) {
+    def completeWithError(error: Throwable)(implicit ctx: RequestContext):Unit={
       ctx.complete(error.toString)
     }
   }
