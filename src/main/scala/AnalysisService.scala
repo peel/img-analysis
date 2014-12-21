@@ -17,11 +17,11 @@ object AnalysisServiceProtocol extends DefaultJsonProtocol {
   implicit val notAnalysedFormat = jsonFormat1(NotAnalysed)
 }
 object AnalysisService{
-
   case class Analyse(img: JBAIS)
   case class Analysed(data: Array[Int])
   case class NotAnalysed(error: String)
 }
+
 class AnalysisService(ctx: RequestContext) extends Actor {
   import AnalysisService._
   import AnalysisServiceProtocol._
@@ -42,8 +42,20 @@ class AnalysisService(ctx: RequestContext) extends Actor {
     log.info("Trying to transform image: {}",image)
     val responseFuture = image.map(_.filter(PixelateFilter(100),ThresholdFilter(127)).scale(0.1))
     responseFuture onComplete {
-      case Success(processed) => ctx.complete(processed.pixels.mkString(","))
+      case Success(processed) =>
+        Future{
+          Matrix(for (y <- 0 until processed.height) yield for(x<-0 until processed.width) yield processed.pixel(x,y))
+        } onComplete {
+          case Success(matrix) => ctx.complete(matrix.toString)
+          case Failure(error) => ctx.complete(error.toString)
+        }
       case Failure(error) => ctx.complete(error.toString)
     }
   }
+}
+
+case class Matrix(data: Seq[Seq[Int]]){
+  val height = data.size
+  val width = data.head.size
+  override def toString = data.map(_.mkString(";")).mkString("\n")
 }

@@ -13,5 +13,11 @@ class AnalysisServiceSpec extends Specification with RootService with ScalatestR
        entity.toString must contain("OK")
      }
     }
+    "return an array when asking  " in {
+      Get("/api/status") ~> route ~> check {
+        status must be (OK)
+        entity.toString must contain("OK")
+      }
+    }
   }
 }
