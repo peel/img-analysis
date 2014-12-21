@@ -43,13 +43,16 @@ class AnalysisService(ctx: RequestContext) extends Actor {
     val responseFuture = image.map(_.filter(PixelateFilter(100),ThresholdFilter(127)).scale(0.1))
     responseFuture onComplete {
       case Success(processed) =>
-        Future{
+        Future {
           Matrix(for (y <- 0 until processed.height) yield for(x<-0 until processed.width) yield processed.pixel(x,y))
         } onComplete {
           case Success(matrix) => ctx.complete(matrix.toString)
-          case Failure(error) => ctx.complete(error.toString)
+          case Failure(error) => completeWithError(error)
         }
-      case Failure(error) => ctx.complete(error.toString)
+      case Failure(error) => completeWithError(error)
+    }
+    def completeWithError(error: Throwable) {
+      ctx.complete(error.toString)
     }
   }
 }

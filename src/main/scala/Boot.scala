@@ -15,7 +15,7 @@ object Boot extends App {
     become {
       case b @ Bound(connection) => log.info(b.toString)
       case cf @ CommandFailed(cmd) => log.error(cf.toString)
-      case all => log.info("Message received: {}",all.toString)
+      case all:Any => log.info("Message received: {}",all.toString)
     }
   })
 

@@ -7,16 +7,18 @@ class AnalysisServiceSpec extends Specification with RootService with ScalatestR
   override implicit def actorRefFactory: ActorRefFactory = system
 
   "The AnalysisService" should {
+    val API_URL: String = "/api/status"
+    val STATUS_CODE: String = "OK"
     "return 'OK' when asking for status " in {
-     Get("/api/status") ~> route ~> check {
+     Get(API_URL) ~> route ~> check {
        status must be (OK)
-       entity.toString must contain("OK")
+       entity.toString must contain(STATUS_CODE)
      }
     }
     "return an array when asking  " in {
-      Get("/api/status") ~> route ~> check {
+      Get(API_URL) ~> route ~> check {
         status must be (OK)
-        entity.toString must contain("OK")
+        entity.toString must contain(STATUS_CODE)
       }
     }
   }
