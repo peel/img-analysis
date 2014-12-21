@@ -29,7 +29,7 @@ trait RootService extends HttpService {
          analysisService ! AnalysisService.Analyse(new JBAIS(image.entity.data.toByteArray))
        case None =>
          requestContext=>
-           complete{
+         complete{
           "nope"
          }
       }
