@@ -1,11 +1,11 @@
 import java.io.{ByteArrayInputStream => JBAIS}
 
-import akka.actor.Actor
+import akka.actor.{Actor, Props}
 import akka.event.Logging
-import com.sksamuel.scrimage.Image
-import com.sksamuel.scrimage.filter.{ThresholdFilter, PixelateFilter}
+import com.sksamuel.scrimage.{AsyncImage, Image}
 import spray.json.DefaultJsonProtocol
 import spray.routing.RequestContext
+
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
@@ -22,42 +22,46 @@ object AnalysisService{
 
 class AnalysisService(ctx: RequestContext) extends Actor {
   import AnalysisService._
-  import spray.httpx.SprayJsonSupport._
   import AnalysisServiceProtocol._
+  import ImageTransformer._
+  import StreamConverter._
+  import ImageConverter._
+  import spray.httpx.SprayJsonSupport._
 
   implicit val system = context.system
   import system.dispatcher
+  val imageTransformer = system.actorOf(Props[ImageTransformer])
+  val streamConverter = system.actorOf(Props[StreamConverter])
+  val imageConverter = system.actorOf(Props[ImageConverter])
   val log = Logging(system, getClass)
 
   def receive = {
-    case Analyse(image) =>
-      log.info("Trying to analyse image: {}",image)
-      analyse(image)
-      context.stop(self)
+    case Analyse(imageStream) =>
+      log.info("Trying to analyse image: {}",imageStream)
+      analyse(imageStream)
+    case ImageFromStream(image) =>
+      log.info("Converted image: {}",image)
+      transform(image)
+    case Transformed(image) =>
+      log.info("Transformed image: {}",image)
+      imageToMatrix(image)
+    case MatrixFromImage(mx) =>
+      log.info("Received matrix: {}",mx)
+      mx.onComplete{
+        case Success(mx) => ctx.complete(Analysed(mx.data))
+        case Failure(err) => completeWithError(err.toString)
+      }
+    case _ =>  completeWithError("Unable to analyse image.")
   }
 
-  def analyse(imgStream: JBAIS) = {
-    val image = Future(Image(imgStream))
-    log.info("Trying to transform image: {}",image)
-    transform(image).map(completeWithMatrix)
-  }
+  def analyse(stream: JBAIS) = streamConverter ! StreamToImage(stream)
 
-  def transform(image: Future[Image]) = {
-    image.map(_.filter(PixelateFilter(100), ThresholdFilter(127)).scale(0.1))
-  }
+  def transform(image: Future[Image]) = imageTransformer ! Transform(image)
 
-  def completeWithError(error: Throwable): Unit = {
-    ctx.complete(NotAnalysed(error.toString))
-  }
+  def imageToMatrix(image: Future[Image]) = imageConverter ! ImageToMatrix(image)
 
-  def completeWithMatrix(img: Image): Unit = {
-    Future {
-      MatrixUtils.fromImage(img)
-    } onComplete {
-      case Success(matrix) => ctx.complete(Analysed(matrix.data))
-      case Failure(error) => completeWithError(error)
-    }
-  }
+  def completeWithError(error: String): Unit = ctx.complete(NotAnalysed(error.toString))
+
 }
 
 
