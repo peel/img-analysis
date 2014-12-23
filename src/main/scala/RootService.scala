@@ -10,6 +10,9 @@ class RootServiceActor extends Actor with RootService {
 }
 
 trait RootService extends HttpService {
+  import spray.httpx.SprayJsonSupport._
+  import AnalysisServiceProtocol._
+  import AnalysisService._
  val route =
   pathPrefix("api"){
     path("status"){
@@ -30,7 +33,7 @@ trait RootService extends HttpService {
        case None =>
          requestContext=>
          complete{
-          "nope"
+           NotAnalysed("Not an image")
          }
       }
      }
