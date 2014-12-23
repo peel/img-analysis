@@ -1,5 +1,4 @@
-import akka.actor.Actor.Receive
-import akka.actor.{Props, ActorRefFactory, Actor}
+import akka.actor.{Props, Actor}
 import spray.http.MultipartFormData
 import spray.routing.HttpService
 import java.io.{ByteArrayInputStream => JBAIS}
@@ -11,8 +10,9 @@ class RootServiceActor extends Actor with RootService {
 
 trait RootService extends HttpService {
   import spray.httpx.SprayJsonSupport._
-  import AnalysisServiceProtocol._
-  import AnalysisService._
+  import analysis.AnalysisServiceProtocol._
+  import analysis.AnalysisService
+  import analysis.AnalysisService._
  val route =
   pathPrefix("api"){
     path("status"){

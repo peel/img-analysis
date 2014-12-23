@@ -1,3 +1,5 @@
+package analysis
+
 import com.sksamuel.scrimage.Image
 
 private object MatrixUtils{

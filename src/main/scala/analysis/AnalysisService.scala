@@ -1,19 +1,22 @@
-import java.io.{ByteArrayInputStream => JBAIS}
+package analysis
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Props, Actor}
 import akka.event.Logging
-import com.sksamuel.scrimage.{AsyncImage, Image}
+import com.sksamuel.scrimage.Image
 import spray.json.DefaultJsonProtocol
 import spray.routing.RequestContext
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import scala.util.{Success, Failure}
+
+import java.io.{ByteArrayInputStream=>JBAIS}
 
 object AnalysisServiceProtocol extends DefaultJsonProtocol {
   import AnalysisService.{Analysed, NotAnalysed}
   implicit val analysedFormat = jsonFormat1(Analysed)
   implicit val notAnalysedFormat = jsonFormat1(NotAnalysed)
 }
+
 object AnalysisService{
   case class Analyse(img: JBAIS)
   case class Analysed(data: Seq[Seq[Int]])
@@ -63,6 +66,3 @@ class AnalysisService(ctx: RequestContext) extends Actor {
   def completeWithError(error: String): Unit = ctx.complete(NotAnalysed(error.toString))
 
 }
-
-
-

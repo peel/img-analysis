@@ -1,7 +1,9 @@
+package analysis
+
 import akka.actor.ActorRefFactory
 import org.specs2.mutable.Specification
-import spray.testkit.ScalatestRouteTest
 import spray.http.StatusCodes._
+import spray.testkit.ScalatestRouteTest
 
 class AnalysisServiceSpec extends Specification with RootService with ScalatestRouteTest {
   override implicit def actorRefFactory: ActorRefFactory = system

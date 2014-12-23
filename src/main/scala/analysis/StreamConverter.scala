@@ -1,4 +1,6 @@
-import java.io.{ByteArrayInputStream=>JBAIS}
+package analysis
+
+import java.io.{ByteArrayInputStream => JBAIS}
 
 import akka.actor.Actor
 import com.sksamuel.scrimage.Image
@@ -12,7 +14,7 @@ object StreamConverter{
 }
 
 class StreamConverter extends Actor{
-  import StreamConverter._
+  import analysis.StreamConverter._
   import context.dispatcher
 
   def receive = {
